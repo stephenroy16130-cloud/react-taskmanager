@@ -1,8 +1,16 @@
+/**
+ * App – Neo‑Minimalist Task Manager
+ *
+ * A single‑page task manager built with React and Tailwind CSS.
+ * Manages a list of tasks (add, toggle, delete), supports filtering,
+ * and automatically saves/loads tasks from localStorage.
+ */
 import { useState, useEffect } from "react";
 
 const STORAGE_KEY = "neo-tasks";
 
 function App() {
+  // Lazy initialiser: reads saved tasks from localStorage on first render
   const [tasks, setTasks] = useState(() => {
     const saved = localStorage.getItem(STORAGE_KEY);
     return saved ? JSON.parse(saved) : [];
@@ -10,11 +18,12 @@ function App() {
   const [newText, setNewText] = useState("");
   const [filter, setFilter] = useState("all"); // "all", "active", "completed"
 
+  // Persist tasks to localStorage whenever they change
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
   }, [tasks]);
 
-  // Add task
+  /** Creates a new task object and adds it to the state */
   const addTask = () => {
     const text = newText.trim();
     if (!text) return;
@@ -25,6 +34,7 @@ function App() {
     setNewText("");
   };
 
+  /** Toggles the completed boolean of the task with the given id */
   const toggleTask = (id) => {
     setTasks(
       tasks.map((task) =>
@@ -33,16 +43,19 @@ function App() {
     );
   };
 
+  /** Removes the task with the given id from the state */
   const deleteTask = (id) => {
     setTasks(tasks.filter((task) => task.id !== id));
   };
 
+  // Derives the filtered list based on the current filter
   const filteredTasks = tasks.filter((task) => {
     if (filter === "active") return !task.completed;
     if (filter === "completed") return task.completed;
-    return true;
+    return true; // "all"
   });
 
+  /** Allows pressing Enter to add a task */
   const handleKeyDown = (e) => {
     if (e.key === "Enter") addTask();
   };
@@ -107,7 +120,7 @@ function App() {
                 key={task.id}
                 className="group flex items-center gap-4 p-3 rounded-xl hover:bg-neutral-50 transition-colors"
               >
-                {/* Checkbox (custom styled) */}
+                {/* Custom checkbox using Tailwind's peer class – the real input is visually hidden */}
                 <label className="relative flex items-center cursor-pointer">
                   <input
                     type="checkbox"
@@ -133,7 +146,7 @@ function App() {
                   </div>
                 </label>
 
-                {/* Task text – clickable to toggle */}
+                {/* Task text – click to toggle completion */}
                 <span
                   onClick={() => toggleTask(task.id)}
                   className={`flex-1 cursor-pointer text-base transition-all ${
@@ -145,7 +158,7 @@ function App() {
                   {task.text}
                 </span>
 
-                {/* Delete button */}
+                {/* Delete button – hidden until the row is hovered (group-hover) */}
                 <button
                   onClick={() => deleteTask(task.id)}
                   className="text-neutral-300 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100 ml-2"
